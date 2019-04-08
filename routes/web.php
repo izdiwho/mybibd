@@ -6,10 +6,17 @@ Route::post('logout', 'Auth\LoginController@logout')->name('logout');
 Route::get('/', 'Controller@welcome');
 Route::get('/home', 'BIBDController@getHome');
 
+Route::get('/vcard/pin', 'BIBDController@getPin');
+
+
+
+
+
+
+
 Route::get('/info', 'BIBDController@getAccountInfo');
 Route::get('/bank', 'BIBDController@getBankAccountDetails');
 Route::get('/user', 'BIBDController@getUserAccountDetails');
-Route::get('/pin', 'BIBDController@getPin');
 Route::get('/send', 'BIBDController@postSendOwnAccount');
 Route::get('/send3', 'BIBDController@postSendOtherAccount');
 Route::get('/sendVcard', 'BIBDController@postVCardSend');

@@ -108,5 +108,20 @@ class BIBDController extends Controller
         ]);
     }
 
+    public function getPin()
+    {
+        $this->loginBIBD();
+
+        $params = array(
+            "location" => "114.4750512,4.6708717"
+        );
+
+        $result = $this->mobile_client->retrieveCardlessPin($params)->return;
+
+        return [
+            'pin' => base64_decode($result->cvv2)
+        ];
+    }
+
    
 }
