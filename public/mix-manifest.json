@@ -1,0 +1,10 @@
+{
+    "/js/app.js": "/js/app.js",
+    "/css/app.css": "/css/app.css",
+    "/js/jsQR.js": "/js/jsQR.js",
+    "/js/qrcode.min.js": "/js/qrcode.min.js",
+    "/js/datatables.js": "/js/datatables.js",
+    "/css/bs4-datatables.css": "/css/bs4-datatables.css",
+    "/js/sweetalert2.js": "/js/sweetalert2.js",
+    "/css/sweetalert2.css": "/css/sweetalert2.css"
+}

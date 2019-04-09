@@ -20,6 +20,13 @@
         "resolve-url-loader": "^2.3.1",
         "sass": "^1.15.2",
         "sass-loader": "^7.1.0",
-        "vue": "^2.5.17"
+        "vue": "^2.5.17",
+        "vue-template-compiler": "^2.6.10"
+    },
+    "dependencies": {
+        "datatables.net": "^1.10.19",
+        "datatables.net-bs4": "^1.10.19",
+        "jsqr": "^1.2.0",
+        "sweetalert2": "^8.8.1"
     }
 }

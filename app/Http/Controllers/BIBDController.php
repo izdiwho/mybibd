@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use Auth;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class BIBDController extends Controller
 {
@@ -56,12 +58,12 @@ class BIBDController extends Controller
             $result = $this->mobile_client->loginMobilePasswordConfirm($params);
 
             if (!isset($result->return->obHeader->success)) {
-                session()->flash('status', 'BIBD Login Failed!');
+                flash('Error!', 'BIBD Login Failed!', 'error');
                 return;
             }
             $user->cookie = $this->mobile_client->_cookies["JSESSIONID"][0];
             $user->save();
-            $this->epay_client->__setCookie = $user->cookie;
+            $this->epay_client->__setCookie("JSESSIONID", $user->cookie);
 
             session()->forget('status');
             session()->flush();
@@ -70,8 +72,8 @@ class BIBDController extends Controller
         }
 
         if ($user->cookie != null) {
-            $this->mobile_client->__setCookie = $user->cookie;
-            $this->epay_client->__setCookie = $user->cookie;
+            $this->mobile_client->__setCookie("JSESSIONID", $user->cookie);
+            $this->epay_client->__setCookie("JSESSIONID", $user->cookie);
 
             if ($this->mobile_client->retriveAccountSummaryV2()->return->obHeader->statusMessage == "SUCCESS") {
                 return;
@@ -108,6 +110,82 @@ class BIBDController extends Controller
         ]);
     }
 
+    public function getVcardHistory($accNo)
+    {
+        $this->loginBIBD();
+
+        $params = array(
+            "accountNumber" => decrypt($accNo, false),
+        );
+
+        $result = $this->mobile_client->retrieveDebitAccountDetails($params)->return;
+
+        $vmchist = array();
+        foreach ($result->tHistory as $r) {
+            if (preg_match('(\bSend VMC\b)', $r->desc, $matches)) {
+                array_push($vmchist, $r);
+            }
+        }
+
+        return $vmchist;
+    }
+
+    public function getSavingsHistory()
+    { }
+
+    public function postVcardSend(Request $request)
+    {
+        $this->loginBIBD();
+
+        $validator = Validator::make($request->all(), [
+            'to' => 'bail|required|integer|digits:7',
+            'amount' => 'bail|required|numeric|min:1',
+            'description' => 'required|string|max:15'
+        ]);
+
+        if ($validator->fails()) {
+            flash('Error!', 'Transaction failed!', 'error');
+
+            return back()->withErrors($validator, 'vcard_send')
+                ->withInput();
+        }
+
+        $params = array(
+            "mobileNumber" => '673' . $request->to,
+            "amount" => $request->amount,
+            "description" => $request->description
+        );
+
+        if ($this->epay_client->performEPaySendCash($params)->return->obHeader->statusMessage == 'Success') {
+            flash('Success!', 'Transaction succeeded!');
+            return back();
+        }
+
+        flash('Error!', 'Transaction failed!', 'error');
+        return back();
+    }
+
+    public function postVcardCheckUsername(Request $request)
+    {
+        $this->loginBIBD();
+
+        $this->validate($request, [
+            'to' => 'required|integer|min:7|max:7'
+        ]);
+
+        $params = array(
+            "mobileNumber" => '673' . $request->to,
+            "amount" => "1",
+            "description" => "check username"
+        );
+
+        if ($this->epay_client->performEPaySendCashConfirm($params)->return->obHeader->statusMessage == 'Success') {
+            return $this->epay_client->performEPaySendCashConfirm($params)->return->obTransaction->userFullName;
+        }
+
+        return 'User does not exists';
+    }
+
     public function getPin()
     {
         $this->loginBIBD();
@@ -122,6 +200,4 @@ class BIBDController extends Controller
             'pin' => base64_decode($result->cvv2)
         ];
     }
-
-   
 }
