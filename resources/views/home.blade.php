@@ -48,7 +48,7 @@
                                     <div class="col-md-4 text-center">
                                         <button type="button" class="btn btn-success btn-sm rounded-0"
                                             data-toggle="modal" data-target="#transactionHistoryModal"
-                                            data-acc-no="{{ $s->acc_no }}" id="savingsTransactionHistoryBtn">
+                                            data-acc-no="{{ $s->acc_no }}" id="transactionHistoryBtn">
                                             History
                                         </button>
                                     </div>
@@ -98,8 +98,9 @@
                                         <h4 class="mt-1">{{ $vcard->balance }}</h4>
                                     </div>
                                     <div class="col-md-4 text-center">
-                                        <button type="button" class="btn btn-success btn-sm rounded-0" data-toggle="modal"
-                                            data-target="#vCardTransactionHistoryModal" id="vCardTransactionHistoryBtn">
+                                        <button type="button" class="btn btn-success btn-sm rounded-0"
+                                            data-toggle="modal" data-target="#vCardTransactionHistoryModal"
+                                            id="vCardTransactionHistoryBtn">
                                             History
                                         </button>
                                     </div>
@@ -158,7 +159,8 @@
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="vCardTransactionHistoryModalTitle">Transaction History: <span id="acc_no"></span>
+                <h5 class="modal-title" id="vCardTransactionHistoryModalTitle">Transaction History: <span
+                        id="acc_no"></span>
                 </h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
@@ -502,27 +504,7 @@
                 });
             });
 
-            // Click vcard history button
-            $(document).on("click", "#vCardTransactionHistoryBtn", function () {
-                $('#vCardTransactionHistoryModalTitle > #acc_no').html("{{ $vcard->acc_no }}");
-                $('#vCardTransactionHistoryTable > tbody').append(
-                    '<tr><td colspan=4 class="text-center"><div class="spinner-border spinner-border-sm" role="status"></div> Fetching data...</td></tr>'
-                );
-                $.get('/vcard/history/{{ encrypt($vcard->acc_no, false) }}', function (data,
-                    status) {
-                    if (status == 'success') {
-                        $('#vCardTransactionHistoryTable > tbody').empty();
-                        savingshistory = data;
-                        savingshistory.forEach(function (s) {
-                            row = "<tr>" +
-                                "<td>" + s['date'] + "</td>" +
-                                "<td>" + s['description'] + "</td>" +
-                                "<td>" + s['amount'] + "</td></tr>";
-                            $('#vCardTransactionHistoryTable > tbody').append(row);
-                        });
-                    }
-                });
-            });
+
 
             // Click savings history button
             $(document).on("click", "#transactionHistoryBtn", function () {
@@ -544,6 +526,28 @@
                                 "<td>" + s['amount'] + "</td>" +
                                 "<td>" + s['balance'] + "</td></tr>";
                             $('#transactionHistoryTable > tbody').append(row);
+                        });
+                    }
+                });
+            });
+
+            // Click vcard history button
+            $(document).on("click", "#vCardTransactionHistoryBtn", function () {
+                $('#vCardTransactionHistoryModalTitle > #acc_no').html("{{ $vcard->acc_no }}");
+                $('#vCardTransactionHistoryTable > tbody').append(
+                    '<tr><td colspan=4 class="text-center"><div class="spinner-border spinner-border-sm" role="status"></div> Fetching data...</td></tr>'
+                );
+                $.get('/vcard/history/{{ encrypt($vcard->acc_no, false) }}', function (data,
+                    status) {
+                    if (status == 'success') {
+                        $('#vCardTransactionHistoryTable > tbody').empty();
+                        savingshistory = data;
+                        savingshistory.forEach(function (s) {
+                            row = "<tr>" +
+                                "<td>" + s['date'] + "</td>" +
+                                "<td>" + s['description'] + "</td>" +
+                                "<td>" + s['amount'] + "</td></tr>";
+                            $('#vCardTransactionHistoryTable > tbody').append(row);
                         });
                     }
                 });
