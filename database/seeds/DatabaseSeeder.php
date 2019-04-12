@@ -13,7 +13,7 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
         User::create([
-            'name' => 'Iz S.',
+            'name' => env('USERNAME'),
             'username' => env('USERNAME'),
             'password' => bcrypt(env('PASSWORD')),
             'internet_pin' => encrypt(env('INTERNET_PIN'), false),

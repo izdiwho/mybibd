@@ -10,14 +10,19 @@
                     <ul class="nav nav-pills nav-fill" id="myTab" role="tablist">
                         <li class="nav-item">
                             <a class="nav-link active" id="savings-tab" data-toggle="tab" href="#savings" role="tab"
-                                aria-controls="savings" aria-selected="true">Savings</a>
+                                aria-controls="savings" aria-selected="true">
+                                Savings
+                            </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" id="vcard-tab" data-toggle="tab" href="#vcard" role="tab"
-                                aria-controls="vcard" aria-selected="false">vCard</a>
+                                aria-controls="vcard" aria-selected="false">
+                                vCard
+                            </a>
                         </li>
                     </ul>
                     <div class="tab-content" id="myTabContent">
+                        {{-- Savings Tab --}}
                         <div class="tab-pane fade show active" id="savings" role="tabpanel"
                             aria-labelledby="savings-tab">
                             <div class="p-3 text-center">
@@ -34,13 +39,19 @@
                                 <div class="row bg-info p-2 d-flex justify-content-center">
                                     <div class="col-md-4 text-center text-white inline">
                                         <h4 class="mt-1"><span onclick="copyText(this)"
-                                                style="cursor:copy">{{ $s->acc_no }}</span></h4>
+                                                style="cursor:copy">{{ $s->acc_no }}</span>
+                                        </h4>
                                     </div>
                                     <div class="col-md-4 text-center text-white inline">
                                         <h4 class="mt-1">{{ $s->balance }}</h4>
                                     </div>
-                                    <div class="col-md-4 text-center"><button type="button"
-                                            class="btn btn-success btn-sm rounded-0">History</button></div>
+                                    <div class="col-md-4 text-center">
+                                        <button type="button" class="btn btn-success btn-sm rounded-0"
+                                            data-toggle="modal" data-target="#transactionHistoryModal"
+                                            data-acc-no="{{ $s->acc_no }}" id="transactionHistoryBtn">
+                                            History
+                                        </button>
+                                    </div>
                                 </div>
                                 @empty
                                 <div class="row bg-danger p-2 d-flex justify-content-center">
@@ -51,6 +62,7 @@
                                 @endforelse
                             </div>
                         </div>
+                        {{-- vCard Tab --}}
                         <div class="tab-pane fade" id="vcard" role="tabpanel" aria-labelledby="vcard-tab">
                             <div class="p-3 text-center">
                                 <div class="row mb-3 text-center">
@@ -77,14 +89,21 @@
                                 </div>
                                 <div class="row bg-info p-2 d-flex justify-content-center">
                                     <div class="col-md-4 text-center text-white inline">
-                                        <h5 class="mt-1">{{ $vcard->acc_no }}</h5>
+                                        <h5 class="mt-1">
+                                            <span onclick="copyText(this)"
+                                                style="cursor:copy">{{ $vcard->acc_no }}</span>
+                                        </h5>
                                     </div>
                                     <div class="col-md-4 text-center text-white inline">
                                         <h4 class="mt-1">{{ $vcard->balance }}</h4>
                                     </div>
-                                    <div class="col-md-4 text-center"><button type="button"
-                                            class="btn btn-success btn-sm rounded-0"
-                                            id="getVcardHistoryBtn">History</button></div>
+                                    <div class="col-md-4 text-center">
+                                        <button type="button" class="btn btn-success btn-sm rounded-0"
+                                            data-toggle="modal" data-target="#vCardTransactionHistoryModal"
+                                            id="vCardTransactionHistoryBtn">
+                                            History
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -96,6 +115,82 @@
 </div>
 
 <!-- Modals -->
+
+{{-- Modal for savings transaction history --}}
+<div class="modal fade" id="transactionHistoryModal" tabindex="-1" role="dialog"
+    aria-labelledby="transactionHistoryModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="transactionHistoryModalTitle">Transaction History: <span id="acc_no"></span>
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row d-flex justify-content-center">
+                    <table id="transactionHistoryTable" class="table table-sm table-striped">
+                        <thead class="thead-inverse">
+                            <tr>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Amount</th>
+                                <th>Balance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-block btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Modal for vcard transaction history --}}
+<div class="modal fade" id="vCardTransactionHistoryModal" tabindex="-1" role="dialog"
+    aria-labelledby="vCardTransactionHistoryModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="vCardTransactionHistoryModalTitle">Transaction History: <span
+                        id="acc_no"></span>
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row d-flex justify-content-center">
+                    <table id="vCardTransactionHistoryTable" class="table table-sm table-striped">
+                        <thead class="thead-inverse">
+                            <tr>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-block btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Modal for getting pin for cardless withdrawal --}}
 <div class="modal fade" id="getPinModal" tabindex="-1" role="dialog" aria-labelledby="getPinModalTitle"
     aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document">
@@ -122,6 +217,7 @@
     </div>
 </div>
 
+{{-- Modal for scanning QR code --}}
 <div class="modal fade" id="scanQRModal" tabindex="-1" role="dialog" aria-labelledby="scanQRModalTitle"
     aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document">
@@ -150,6 +246,7 @@
     </div>
 </div>
 
+{{-- Modal for sending via savings account --}}
 <div class="modal fade" id="sendSavingsModal" tabindex="-1" role="dialog" aria-labelledby="sendSavingsModalTitle"
     aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document">
@@ -212,6 +309,7 @@
     </div>
 </div>
 
+{{-- Modal for sending via vCard --}}
 <div class="modal fade" id="sendVcardModal" tabindex="-1" role="dialog" aria-labelledby="sendVcardModalTitle"
     aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document">
@@ -298,6 +396,7 @@
     </div>
 </div>
 
+{{-- Modal for generating QR Code --}}
 <div class="modal fade" id="generateQRModal" tabindex="-1" role="dialog" aria-labelledby="generateQRModalTitle"
     aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document">
@@ -382,6 +481,8 @@
         </div>
     </div>
 </div>
+
+{{-- Javascript --}}
 <script src="{{ asset('js/jsQR.js') }}"></script>
 <script>
     window.addEventListener('DOMContentLoaded', function () {
@@ -403,16 +504,56 @@
                 });
             });
 
-            // Click vcard history button
-            $(document).on("click", "#getVcardHistoryBtn", function () {
-                $.get('/vcard/history/{{ encrypt($vcard->acc_no, false) }}', function (data,
+
+
+            // Click savings history button
+            $(document).on("click", "#transactionHistoryBtn", function () {
+                acc_no = $(this).data('acc-no');
+                encoded_acc_no = btoa(acc_no);
+                $('#transactionHistoryModalTitle > #acc_no').html(acc_no);
+                $('#transactionHistoryTable > tbody').append(
+                    '<tr><td colspan=4 class="text-center"><div class="spinner-border spinner-border-sm" role="status"></div> Fetching data...</td></tr>'
+                );
+                $.get('/savings/history/' + encoded_acc_no, function (data,
                     status) {
-                    vcardhistory = data;
-                    console.log(vcardhistory);
+                    if (status == 'success') {
+                        $('#transactionHistoryTable > tbody').empty();
+                        savingshistory = data;
+                        savingshistory.forEach(function (s) {
+                            row = "<tr>" +
+                                "<td>" + s['date'] + "</td>" +
+                                "<td>" + s['description'] + "</td>" +
+                                "<td>" + s['amount'] + "</td>" +
+                                "<td>" + s['balance'] + "</td></tr>";
+                            $('#transactionHistoryTable > tbody').append(row);
+                        });
+                    }
                 });
             });
 
             // Click vcard history button
+            $(document).on("click", "#vCardTransactionHistoryBtn", function () {
+                $('#vCardTransactionHistoryModalTitle > #acc_no').html("{{ $vcard->acc_no }}");
+                $('#vCardTransactionHistoryTable > tbody').append(
+                    '<tr><td colspan=4 class="text-center"><div class="spinner-border spinner-border-sm" role="status"></div> Fetching data...</td></tr>'
+                );
+                $.get('/vcard/history/{{ encrypt($vcard->acc_no, false) }}', function (data,
+                    status) {
+                    if (status == 'success') {
+                        $('#vCardTransactionHistoryTable > tbody').empty();
+                        savingshistory = data;
+                        savingshistory.forEach(function (s) {
+                            row = "<tr>" +
+                                "<td>" + s['date'] + "</td>" +
+                                "<td>" + s['description'] + "</td>" +
+                                "<td>" + s['amount'] + "</td></tr>";
+                            $('#vCardTransactionHistoryTable > tbody').append(row);
+                        });
+                    }
+                });
+            });
+
+            // Click generate QR button
             $(document).on("click", "#generateQRBtn", function () {
                 to = $('#qr-to').val();
                 amount = $('#qr-amount').val();
@@ -469,8 +610,6 @@
                 });
             });
 
-
-
             function tick() {
                 loadingMessage.innerText = "⌛ Loading video..."
                 if (video.readyState === video.HAVE_ENOUGH_DATA) {
@@ -511,6 +650,7 @@
         })(jQuery);
     });
 
+    // JS to copy on click for account numbers
     function copyText(element) {
         var $temp = $("<input>");
         $("body").append($temp);
@@ -520,6 +660,8 @@
     }
 
 </script>
+
+{{-- Pop up send vcard modal on error --}}
 @if(count($errors->vcard_send) > 0)
 <script>
     $('#vcard').tab('show');
