@@ -22,7 +22,7 @@ If you want to run this on your own laptop, use Laragon (assuming you're on wind
 5. Run `composer install`
 6. Run `npm install`
 7. Run `php artisan key:generate`
-8. Run `php artisan migrate:fresh --seed` (Note: The seeder will add `Iz S.` as the name of the user)
+8. Run `php artisan migrate:fresh --seed`
 9. Done, just go to mybibd.test in your web browser and login using your creds.
 
 ## TODO:
