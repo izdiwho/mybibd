@@ -512,7 +512,7 @@
                 encoded_acc_no = btoa(acc_no);
                 $('#transactionHistoryModalTitle > #acc_no').html(acc_no);
                 $('#transactionHistoryTable > tbody').append(
-                    '<tr><td colspan=4 class="text-center"><div class="spinner-border text-sm" role="status"></div> Fetching data...</td></tr>'
+                    '<tr><td colspan=4 class="text-center"><div class="spinner-border spinner-border-sm" role="status"></div> Fetching data...</td></tr>'
                 );
                 $.get('/savings/history/' + encoded_acc_no, function (data,
                     status) {
