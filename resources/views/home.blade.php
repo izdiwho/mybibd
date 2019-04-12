@@ -77,7 +77,8 @@
                                 </div>
                                 <div class="row bg-info p-2 d-flex justify-content-center">
                                     <div class="col-md-4 text-center text-white inline">
-                                        <h5 class="mt-1">{{ $vcard->acc_no }}</h5>
+                                        <h5 class="mt-1"><span onclick="copyText(this)"
+                                            style="cursor:copy">{{ $vcard->acc_no }}</span></h5>
                                     </div>
                                     <div class="col-md-4 text-center text-white inline">
                                         <h4 class="mt-1">{{ $vcard->balance }}</h4>
