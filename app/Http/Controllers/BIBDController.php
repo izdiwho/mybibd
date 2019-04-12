@@ -45,9 +45,6 @@ class BIBDController extends Controller
 
             $mpassword = implode(",", $mpass);
 
-            //     "deviceType" => "Android",
-            //     "data" => "119.160.171.7",
-            //     "deviceId" => "CVH7N16428000077"
             $params = array(
                 "mPassword" => $mpassword,
                 "deviceType" => "Testing",
@@ -191,7 +188,7 @@ class BIBDController extends Controller
         $this->loginBIBD();
 
         $params = array(
-            "location" => "114.4750512,4.6708717"
+            "location" => "114.9399723,4.8887523"
         );
 
         $result = $this->mobile_client->retrieveCardlessPin($params)->return;
