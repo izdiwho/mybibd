@@ -9,8 +9,8 @@ Route::get('/home', 'BIBDController@getHome');
 Route::get('/vcard/pin', 'BIBDController@getPin');
 Route::get('/vcard/history/{accNo}', 'BIBDController@getVcardHistory');
 Route::post('/vcard/send', 'BIBDController@postVCardSend')->name('vcard.send');
-Route::post('/vcard/checkusername', 'BIBDController@postVcardCheckUsername');
+Route::post('/vcard/topup', 'BIBDController@postVcardTopUp')->name('vcard.topup');
+Route::post('/vcard/checkusername', 'BIBDController@postVcardCheckPhoneNumber');
 Route::get('/vcard/scan/{data}', 'BIBDController@getScannedData');
+
 Route::get('/savings/history/{accNo}', 'BIBDController@getSavingsHistory');
-
-

@@ -72,6 +72,10 @@
                                                 data-target="#sendVcardModal"
                                                 id="sendVcardBtn"></i><br><small>Send</small>
                                         </button>
+                                        <button type="button" class="btn btn-primary btn-lg m-1"><i
+                                                class="fas fa-arrow-up fa-4x" data-toggle="modal"
+                                                data-target="#topupVcardModal"></i><br><small>Topup vCard</small>
+                                        </button>
                                         <button type="button" class="btn btn-primary btn-lg m-1" data-toggle="modal"
                                             data-target="#getPinModal" id="getPinBtn"
                                             data-card-no="{{ $vcard->acc_no }}"><i
@@ -336,6 +340,10 @@
                                         <input id="vcard-to" type="text"
                                             class="form-control{{ $errors->vcard_send->has('to') ? ' is-invalid' : '' }}"
                                             name="to" value="{{ old('to') }}" placeholder="To" required>
+                                        <div class="input-group-append">
+                                            <button class="btn btn-outline-secondary" type="button"
+                                                id="checkVcardBtn">Check</button>
+                                        </div>
                                     </div>
 
                                     @if ($errors->vcard_send->has('to'))
@@ -343,6 +351,8 @@
                                         <strong>{{ $errors->vcard_send->first('to') }}</strong>
                                     </span>
                                     @endif
+                                    <span id="check_vcard_output">
+                                    </span>
                                 </div>
                             </div>
                             <div class="form-group row">
@@ -421,6 +431,10 @@
                                     <input id="qr-to" type="text"
                                         class="form-control{{ $errors->vcard_send->has('to') ? ' is-invalid' : '' }}"
                                         name="to" value="{{ old('to') }}" placeholder="To" required>
+                                    <div class="input-group-append">
+                                        <button class="btn btn-outline-secondary" type="button"
+                                            id="checkVcardBtn">Button</button>
+                                    </div>
                                 </div>
 
                                 @if ($errors->vcard_send->has('to'))
@@ -482,6 +496,72 @@
     </div>
 </div>
 
+{{-- Modal for topup vcard --}}
+<div class="modal fade" id="topupVcardModal" tabindex="-1" role="dialog" aria-labelledby="topupVcardModalTitle"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="topupVcardModalTitle">Top Up vCard</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="offset-md-1 col-md-10">
+                        <form action="{{ route('vcard.topup') }}" method="POST">
+                            @csrf
+                            <div class="form-group row">
+                                <label for="amount" class="col-md-3 col-form-label text-md-right">From</label>
+
+                                <div class="col-md-9">
+                                    <select class="form-control" name="from" id="topup-from">
+                                        @foreach($savings_accs as $s)
+                                            <option value="{{ $savings_accs_pos[$loop->index] }}">{{ $s }}</option>
+                                        @endforeach
+                                    </select>
+
+                                    @if ($errors->has('amount'))
+                                    <span class="invalid-feedback">
+                                        <strong>{{ $errors->first('amount') }}</strong>
+                                    </span>
+                                    @endif
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="amount" class="col-md-3 col-form-label text-md-right">Amount</label>
+
+                                <div class="col-md-9">
+                                    <input id="topup-amount" type="number" min="2.00" step="0.01"
+                                        class="form-control{{ $errors->has('amount') ? ' is-invalid' : '' }}"
+                                        name="amount" value="{{ old('amount') }}" placeholder="Amount" required>
+
+                                    @if ($errors->has('amount'))
+                                    <span class="invalid-feedback">
+                                        <strong>{{ $errors->first('amount') }}</strong>
+                                    </span>
+                                    @endif
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <div class="col-md-9 offset-md-3">
+                                    <button type="submit" class="btn btn-primary btn-block">
+                                        Send
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-block btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 {{-- Javascript --}}
 <script src="{{ asset('js/jsQR.js') }}"></script>
 <script>
@@ -504,13 +584,24 @@
                 });
             });
 
-
+            // Click check vcard button
+            $(document).on("click", "#checkVcardBtn", function () {
+                to = $('#vcard-to').val();
+                $('#check_vcard_output').text('Checking...');
+                axios.post('/vcard/checkusername', {
+                        to: to,
+                    })
+                    .then(function (response, status) {
+                        $('#check_vcard_output').text(response.data);
+                    });
+            });
 
             // Click savings history button
             $(document).on("click", "#transactionHistoryBtn", function () {
                 acc_no = $(this).data('acc-no');
                 encoded_acc_no = btoa(acc_no);
                 $('#transactionHistoryModalTitle > #acc_no').html(acc_no);
+                $('#vCardTransactionHistoryTable > tbody').empty();
                 $('#transactionHistoryTable > tbody').append(
                     '<tr><td colspan=4 class="text-center"><div class="spinner-border spinner-border-sm" role="status"></div> Fetching data...</td></tr>'
                 );
@@ -534,6 +625,7 @@
             // Click vcard history button
             $(document).on("click", "#vCardTransactionHistoryBtn", function () {
                 $('#vCardTransactionHistoryModalTitle > #acc_no').html("{{ $vcard->acc_no }}");
+                $('#vCardTransactionHistoryTable > tbody').empty();
                 $('#vCardTransactionHistoryTable > tbody').append(
                     '<tr><td colspan=4 class="text-center"><div class="spinner-border spinner-border-sm" role="status"></div> Fetching data...</td></tr>'
                 );

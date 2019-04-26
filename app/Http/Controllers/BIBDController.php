@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Log;
 use Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -16,9 +17,12 @@ class BIBDController extends Controller
         $this->middleware('auth');
 
         try {
-
             $this->mobile_client = new \SoapClient('https://cib.bibd.com.bn/CCMiBWs/MiBWSServices/?wsdl');
             $this->epay_client = new \SoapClient('https://cib.bibd.com.bn/CCMiBWs/EPayWSServices/?wsdl');
+            $this->savings_accs = array();
+            $this->savings_accs_pos = array();
+            $this->vcard_acc = "";
+            $this->vcard_acc_pos = "";
         } catch (\Exception $e) {
             return "Probably missing soap extension.";
         }
@@ -72,29 +76,68 @@ class BIBDController extends Controller
                     flash('Error!', 'BIBD Login Failed!', 'error');
                     return;
                 }
-                $user->cookie = $this->mobile_client->_cookies["JSESSIONID"][0];
-                $user->save();
-                $this->epay_client->__setCookie("JSESSIONID", $user->cookie);
 
-                session()->forget('status');
-                session()->flush();
+                if ($this->mobile_client->retriveAccountSummaryV2()->return->obHeader->statusMessage == "SUCCESS") {
+                    $i = $this->mobile_client->retriveAccountSummaryV2()->return;
+                    foreach ($i->obSavingsAccountDetails as $s) {
+                        array_push($this->savings_accs, $s->accNo);
+                    }
+                    $this->vcard_acc = $i->obDebitCardAccountDetails->accNo;
 
-                return;
+                    $t = $this->mobile_client->fundTransferOwnRetrieve()->return->debitingAccountDetails;
+
+                    $c = 1;
+                    foreach ($t as $_t) {
+                        if (in_array($_t->accNo, $this->savings_accs)) {
+                            array_push($this->savings_accs_pos, $c);
+                        }
+                        if ($_t->accNo == $this->vcard_acc) {
+                            $this->vcard_acc_pos = $c;
+                        }
+                        $c++;
+                    }
+
+                    $user->cookie = $this->mobile_client->_cookies["JSESSIONID"][0];
+                    $user->save();
+                    $this->epay_client->__setCookie("JSESSIONID", $user->cookie);
+
+                    return;
+                }
             }
             if ($user->cookie != null) {
                 $this->mobile_client->__setCookie("JSESSIONID", $user->cookie);
                 $this->epay_client->__setCookie("JSESSIONID", $user->cookie);
 
                 if ($this->mobile_client->retriveAccountSummaryV2()->return->obHeader->statusMessage == "SUCCESS") {
+                    $i = $this->mobile_client->retriveAccountSummaryV2()->return;
+                    foreach ($i->obSavingsAccountDetails as $s) {
+                        array_push($this->savings_accs, $s->accNo);
+                    }
+                    $this->vcard_acc = $i->obDebitCardAccountDetails->accNo;
+
+                    $t = $this->mobile_client->fundTransferOwnRetrieve()->return->debitingAccountDetails;
+
+                    $c = 1;
+                    foreach ($t as $_t) {
+                        if (in_array($_t->accNo, $this->savings_accs)) {
+                            array_push($this->savings_accs_pos, $c);
+                        }
+                        if ($_t->accNo == $this->vcard_acc) {
+                            $this->vcard_acc_pos = $c;
+                        }
+                        $c++;
+                    }
+
                     return;
                 }
+
                 $user->cookie = null;
                 $user->save();
                 $this->loginBIBD();
             }
         } catch (\Exception $e) {
             report($e);
-            return "Error: Check Logs.";
+            return "Error (loginBIBD): Check Logs.";
         }
 
         return "Error";
@@ -126,7 +169,9 @@ class BIBDController extends Controller
 
             return view('home', [
                 'savings' => $savings,
-                'vcard' => $vcard
+                'vcard' => $vcard,
+                'savings_accs' => $this->savings_accs,
+                'savings_accs_pos' => $this->savings_accs_pos,
             ]);
         } catch (\Exception $e) {
             report($e);
@@ -288,13 +333,12 @@ class BIBDController extends Controller
 
         try {
             $this->validate($request, [
-                'to' => 'required|integer|min:7|max:7'
+                'to' => 'required|integer|digits:7'
             ]);
-
             $params = array(
                 "mobileNumber" => '673' . $request->to,
                 "amount" => "1",
-                "description" => "check phone number"
+                "description" => "check username"
             );
 
             if ($this->epay_client->performEPaySendCashConfirm($params)->return->obHeader->statusMessage == 'Success') {
@@ -302,6 +346,41 @@ class BIBDController extends Controller
             }
 
             return 'User does not exist';
+        } catch (\Exception $e) {
+            report($e);
+            return "Error: Check Logs.";
+        }
+
+        return "Error";
+    }
+
+    /**
+     * Top up vCard
+     */
+    public function postVcardTopUp(Request $request)
+    {
+        $this->loginBIBD();
+
+        try {
+            $this->validate($request, [
+                'from' => 'required|integer|in:' . implode(',', $this->savings_accs_pos),
+                'amount' => 'required|numeric|min:2',
+            ]);
+
+            $params = array(
+                "transferFromAccount" => $request->from,
+                "transferToAccount" => $this->vcard_acc_pos,
+                "transferAmount" => $request->amount
+            );
+
+            $this->mobile_client->fundTransferOwnConfirm($params);
+            if ($this->mobile_client->fundTransferOwnSumbit($params)->return->obHeader->success) {
+                flash('Success!', 'Transaction succeeded!');
+                return back();
+            }
+
+            flash('Error!', 'Transaction failed!', 'error');
+            return back();
         } catch (\Exception $e) {
             report($e);
             return "Error: Check Logs.";
