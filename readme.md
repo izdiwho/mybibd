@@ -106,7 +106,7 @@ http://mybibd.test
 
 ## TODO:
 - [x] Transaction history
-- [ ] Top up your vCard
+- [x] Top up your vCard
 - [ ] Schedule standing instructions/automate sending payments
 - [ ] Save phone numbers, account numbers and DES numbers
 - [ ] Top up DST
