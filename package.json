@@ -27,6 +27,6 @@
         "datatables.net": "^1.10.22",
         "datatables.net-bs4": "^1.10.19",
         "jsqr": "^1.2.0",
-        "sweetalert2": "^8.8.1"
+        "sweetalert2": "^8.19.0"
     }
 }
